@@ -1,0 +1,11 @@
+dist
+node_modules
+npm-debug.log
+__snapshots__
+coverage
+report-task.txt
+.sonar_lock
+test-report.xml
+.scannerwork
+.DS_Store
+.DS_Store?

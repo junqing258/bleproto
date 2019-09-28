@@ -1,0 +1,33 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "js": true
+        }        
+    },
+    "globals": {
+        "describe": true,
+        "it": true,
+        "PAG_NATIVE": true,
+        "wx": true
+    },
+    "env": {
+        "es6": true,
+        "node": true
+    },
+    "rules": {
+        "comma-dangle": ["off", "always-multiline"],
+        "semi": ["error", "always"],
+        "camelcase": 0,
+        "one-var": 0,
+        "no-tabs": "off",
+        "linebreak-style": [0, "windows"],
+        "class-methods-use-this": 0,
+        "padded-blocks": [0, "always"],
+        "quotes": [0, "double", { "allowTemplateLiterals": true }],
+        "no-use-before-define": ["error", { "functions": false, "classes": true }]
+    },
+    "extends": ["eslint:recommended"],
+    "plugins": []
+}

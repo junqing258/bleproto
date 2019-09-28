@@ -1,0 +1,21 @@
+{
+  "onMove" : {
+    "required uInt32 entityId" : 1,
+    "message Path": {
+      "required uInt32 x" : 1,
+      "required uInt32 y" : 2
+    },
+    "repeated Path path" : 2,
+    "required uInt32 speed" : 3
+  },
+  "onAttack" : {
+    "required uInt32 attacker" : 1,
+    "required uInt32 target" : 2,
+    "message AttackResult" : {
+      "required uInt32 result" :  1,
+      "required uInt32 damage" : 2,
+      "optional uInt32 exp" : 3
+    },
+    "required AttackResult result" : 3
+  }
+}
