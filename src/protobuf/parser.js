@@ -6,12 +6,12 @@ var Parser = module.exports;
  * @return {[Object]} The presed result, a js object represent all the meta data of the given protos.
  */
 Parser.parse = function(protos){
-	var maps = {};
+	/* var maps = {};
 	for(var key in protos){
 		maps[key] = parseObject(protos[key]);
 	}
-
-	return maps;
+ */
+	return parseObject(protos);
 };
 
 /**

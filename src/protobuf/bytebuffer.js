@@ -48,33 +48,37 @@
      * @expose
      */
     var ByteBuffer = function(capacity, littleEndian, noAssert) {
-        if (typeof capacity === 'undefined')
-            capacity = ByteBuffer.DEFAULT_CAPACITY;
-        if (typeof littleEndian === 'undefined')
-            littleEndian = ByteBuffer.DEFAULT_ENDIAN;
-        if (typeof noAssert === 'undefined')
-            noAssert = ByteBuffer.DEFAULT_NOASSERT;
-        if (!noAssert) {
-            capacity = capacity | 0;
-            if (capacity < 0)
-                throw RangeError("Illegal capacity");
-            littleEndian = !!littleEndian;
-            noAssert = !!noAssert;
+        if (capacity instanceof ArrayBuffer) {
+            this.buffer = capacity;
+        } else {
+            if (typeof capacity === 'undefined')
+                capacity = ByteBuffer.DEFAULT_CAPACITY;
+            if (typeof littleEndian === 'undefined')
+                littleEndian = ByteBuffer.DEFAULT_ENDIAN;
+            if (typeof noAssert === 'undefined')
+                noAssert = ByteBuffer.DEFAULT_NOASSERT;
+            if (!noAssert) {
+                capacity = capacity | 0;
+                if (capacity < 0)
+                    throw RangeError("Illegal capacity");
+                littleEndian = !!littleEndian;
+                noAssert = !!noAssert;
+            }
+
+            /**
+             * Backing ArrayBuffer.
+             * @type {!ArrayBuffer}
+             * @expose
+             */
+            this.buffer = capacity === 0 ? EMPTY_BUFFER : new ArrayBuffer(capacity);
         }
-
-        /**
-         * Backing ArrayBuffer.
-         * @type {!ArrayBuffer}
-         * @expose
-         */
-        this.buffer = capacity === 0 ? EMPTY_BUFFER : new ArrayBuffer(capacity);
-
         /**
          * Uint8Array utilized to manipulate the backing buffer. Becomes `null` if the backing buffer has a capacity of `0`.
          * @type {?Uint8Array}
          * @expose
          */
         this.view = capacity === 0 ? null : new Uint8Array(this.buffer);
+        
 
         /**
          * Absolute read/write offset.

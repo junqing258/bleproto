@@ -1,152 +1,96 @@
-var codec = require('./codec');
-var util = require('./util');
+// var util = require('./util');
+const ByteBuffer = require("./bytebuffer");
 
-var Decoder = module.exports;
+const Decoder = module.exports;
 
-var buffer;
-var offset = 0;
-
-Decoder.init = function(protos){
-	this.protos = protos || {};
-};
-
-Decoder.setProtos = function(protos){
-	if(!!protos){
-		this.protos = protos;
-	}
-};
-
-Decoder.decode = function(route, buf){
-	var protos = this.protos[route];
-
-	buffer = buf;
-	offset = 0;
-
-	if(!!protos){
-		return decodeMsg({}, protos, buffer.length);
-	}
-
-	return null;
-};
-
-function decodeMsg(msg, protos, length){
-	while(offset<length){
-		var head = getHead();
-		var type = head.type;
-		var tag = head.tag;
-		var name = protos.__tags[tag];
-
-		switch(protos[name].option){
-			case 'optional' :
-			case 'required' :
-				msg[name] = decodeProp(protos[name].type, protos);
-			break;
-			case 'repeated' :
-				if(!msg[name]){
-					msg[name] = [];
-				}
-				decodeArray(msg[name], protos[name].type, protos);
-			break;
-		}
-	}
-
-	return msg;
-}
+let offset = 0,
+  tags = [],
+  bytebuffer;
 
 /**
- * Test if the given msg is finished
+ * @param {Object} protos
+ * @param {ArrayBuffer} ab
  */
-function isFinish(msg, protos){
-	return (!protos.__tags[peekHead().tag]);
-}
-/**
- * Get property head from protobuf
- */
-function getHead(){
-	var tag = codec.decodeUInt32(getBytes());
+Decoder.decode = function(protos, ab) {
+  let msg = Object.create(null);
+  let length = ab.byteLength;
 
-	return {
-		type : tag&0x7,
-		tag	: tag>>3
-	};
-}
+  bytebuffer = new ByteBuffer(ab);
+  tags = Object.keys(protos.__tags).sort();
 
-/**
- * Get tag head without move the offset
- */
-function peekHead(){
-	var tag = codec.decodeUInt32(peekBytes());
+  decodeMsg(msg, protos, length);
+  return msg;
+};
 
-	return {
-		type : tag&0x7,
-		tag	: tag>>3
-	};
-}
+function decodeMsg(msg, protos, length) {
+  while (offset < length) {
+    var head = getHead(protos);
+    var name = protos.__tags[head.tag];
 
-function decodeProp(type, protos){
-	switch(type){
-		case 'uInt32':
-			return codec.decodeUInt32(getBytes());
-		case 'int32' :
-		case 'sInt32' :
-			return codec.decodeSInt32(getBytes());
-		case 'float' :
-			var float = buffer.readFloatLE(offset);
-			offset += 4;
-			return float;
-		case 'double' :
-			var double = buffer.readDoubleLE(offset);
-			offset += 8;
-			return double;
-		case 'string' :
-			var length = codec.decodeUInt32(getBytes());
-
-			var str =  buffer.toString('utf8', offset, offset+length);
-			offset += length;
-
-			return str;
-		default :
-			var message = protos && (protos.__messages[type] || Decoder.protos['message ' + type]);
-			if(message){
-				var length = codec.decodeUInt32(getBytes());
-				var msg = {};
-				decodeMsg(msg, message, offset+length);
-				return msg;
-			}
-		break;
-	}
+    if (!name) break;
+    switch (protos[name].option) {
+      case 'optional':
+      case 'required':
+        msg[name] = decodeProp(protos[name].type, protos);
+        break;
+      case 'repeated':
+        if (!msg[name]) {
+          msg[name] = [];
+        }
+        // decodeArray(msg[name], protos[name].type, protos);
+        break;
+    }
+  }
+  return msg;
 }
 
-function decodeArray(array, type, protos){
-	if(util.isSimpleType(type)){
-		var length = codec.decodeUInt32(getBytes());
-
-		for(var i = 0; i < length; i++){
-			array.push(decodeProp(type));
-		}
-	}else{
-		array.push(decodeProp(type, protos));
-	}
+function decodeProp(type, protos) {
+  switch (type) {
+    case 'uInt8':
+    case 'byte':
+      return bytebuffer.readUint8();
+    case 'int8':
+      return bytebuffer.readInt8();
+    case 'char':
+      return String.fromCharCode(bytebuffer.readInt8());
+    case 'uInt16':
+      return bytebuffer.readUint16();
+    case 'int16':
+        return bytebuffer.readInt16();
+    case 'uInt32':
+        return bytebuffer.readUint32(); 
+    case 'int32':
+        return bytebuffer.readInt32();
+    case 'float':
+        return bytebuffer.readFloat();
+    case 'double':
+        return bytebuffer.readDouble();
+    default:
+      var message = protos && (protos.__messages[type] || Decoder.protos['message ' + type]);
+      if (message) {
+        var msg = {};
+        decodeMsg(msg, message);
+        return msg;
+      }
+      break;
+  }
 }
 
-function getBytes(flag){
-	var bytes = [];
-	var pos = offset;
-	flag = flag || false;
+// function decodeArray(array, type, protos){
+// 	if(util.isSimpleType(type)){
+// 		var length = codec.decodeUInt32(getBytes());
 
-	var b;
-	do{
-		var b = buffer.readUInt8(pos);
-		bytes.push(b);
-		pos++;
-	}while(b >= 128);
+// 		for(var i = 0; i < length; i++){
+// 			array.push(decodeProp(type));
+// 		}
+// 	}else{
+		// array.push(decodeProp(type, protos));
+// 	}
+// }
 
-	if(!flag){
-		offset = pos;
-	}
-	return bytes;
-}
-
-function peekBytes(){
-	return getBytes(true);
+function getHead() { 
+  var tag = tags.shift();
+  return {
+    tag
+  };
 }

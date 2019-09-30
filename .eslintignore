@@ -2,3 +2,4 @@ src/js/libs/**
 node_modules/**
 dist/**
 bin/**
+src/protobuf/bytebuffer.js
