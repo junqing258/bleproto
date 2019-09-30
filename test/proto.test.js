@@ -34,19 +34,27 @@ describe('BLE Protcal Tests', () => {
       "required uInt8 h": 0,
       "required uInt8 r_format": 1,
       "required uInt8 channle_no": 2,
-      "required int32 channle_msb": 3
+      "repeated int32 channle_msb": 3,
+      "required char ch_br": 4
     };
     const msg = {
       "h": 0,
       "r_format": 3,
       "channle_no": 0,
-      "channle_msb": 83
+      "channle_msb": [2, 3, 4, 70],
+      "ch_br": 'a'
     };
     const parse_protos = Parse.parse(protos);
 
     const hex = Encoder.encode(parse_protos, msg);
     console.log('hex:', hex);
     expect(hex).to.have.string('0003');
+
+    const ab = util.hex2ab(hex);
+    const dmsg = Decoder.decode(parse_protos, ab);
+    console.log("decode msg:", JSON.stringify(dmsg));
+    expect(msg).to.have.property('r_format', 3);
+
     done();
   });
 

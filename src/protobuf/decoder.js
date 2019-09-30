@@ -37,7 +37,7 @@ function decodeMsg(msg, protos, length) {
         if (!msg[name]) {
           msg[name] = [];
         }
-        // decodeArray(msg[name], protos[name].type, protos);
+        decodeArray(msg[name], protos[name].type, protos);
         break;
     }
   }
@@ -76,17 +76,12 @@ function decodeProp(type, protos) {
   }
 }
 
-// function decodeArray(array, type, protos){
-// 	if(util.isSimpleType(type)){
-// 		var length = codec.decodeUInt32(getBytes());
-
-// 		for(var i = 0; i < length; i++){
-// 			array.push(decodeProp(type));
-// 		}
-// 	}else{
-		// array.push(decodeProp(type, protos));
-// 	}
-// }
+function decodeArray(array, type, protos){
+  let length = bytebuffer.readUint32();
+  for(var i = 0; i < length; i++){
+    array.push(decodeProp(type, protos));
+  }
+}
 
 function getHead() { 
   var tag = tags.shift();

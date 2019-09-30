@@ -53,7 +53,8 @@ function checkMsg(msg, protos) {
         }
         break;
       case 'repeated':
-        message = protos.__messages[proto.type] || Encoder.protos['message ' + proto.type];
+        message = protos[name];
+        // message = protos.__messages[proto.type] || Encoder.protos['message ' + proto.type];
         if (!!msg[name] && !!message) {
           for (let i = 0; i < msg[name].length; i++) {
             if (!checkMsg(msg[name][i], message)) {
