@@ -1,6 +1,4 @@
-var util = module.exports;
-
-util.isSimpleType = function(type) {
+function isSimpleType(type) {
   return (type === 'uInt32' ||
     type === 'sInt32' ||
     type === 'int32' ||
@@ -8,15 +6,15 @@ util.isSimpleType = function(type) {
     type === 'sInt64' ||
     type === 'float' ||
     type === 'double');
-};
+}
 
-util.equal = function(obj0, obj1) {
+function equal(obj0, obj1) {
   for (var key in obj0) {
     var m = obj0[key];
     var n = obj1[key];
 
     if (typeof(m) === 'object') {
-      if (!util.equal(m, n)) {
+      if (!equal(m, n)) {
         return false;
       }
     } else if (m !== n) {
@@ -25,15 +23,75 @@ util.equal = function(obj0, obj1) {
   }
 
   return true;
-};
+}
 
-util.byteLength = function(str) {
+function byteLength(str) {
   var s = str.length;
-  for (var i=str.length-1; i>=0; i--) {
+  for (var i = str.length - 1; i >= 0; i--) {
     var code = str.charCodeAt(i);
     if (code > 0x7f && code <= 0x7ff) s++;
-    else if (code > 0x7ff && code <= 0xffff) s+=2;
+    else if (code > 0x7ff && code <= 0xffff) s += 2;
     if (code >= 0xDC00 && code <= 0xDFFF) i--; //trail surrogate
   }
   return s;
 }
+
+function ab2hex(buffer) {
+  var hexArr = Array.prototype.map.call(new Uint8Array(buffer), function(bit) {
+    return ("00" + bit.toString(16)).slice(-2);
+  });
+  return hexArr.join("");
+}
+
+function hex2ab(hex) {
+  var typedArray = new Uint8Array(hex.match(/[\da-f]{2}/gi).map(function(h) {
+    return parseInt(h, 16);
+  }));
+  return typedArray.buffer;
+}
+
+function buffer2Str(buffer) {
+  let hexArr = Array.prototype.map.call(new Uint8Array(buffer), function(bit) {
+    return ("00" + bit.toString(16)).slice(-2);
+  });
+  return `${hexArr[0]}:${hexArr[1]}:${hexArr[2]}:${hexArr[3]}:${hexArr[4]}:${hexArr[5]}`
+    .toUpperCase();
+}
+
+function str2ab(str) {
+  var buf = new ArrayBuffer(str.length);
+  var bufView = new Uint8Array(buf);
+  for (var i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str[i];
+  }
+  return buf;
+}
+
+// Convert a hex string to a byte array
+function hex2Bytes(hex) {
+  for (var bytes = [], c = 0; c < hex.length; c += 2)
+    bytes.push(parseInt(hex.substr(c, 2), 16));
+  return bytes;
+}
+
+// Convert a byte array to a hex string
+function bytes2Hex(bytes) {
+  for (var hex = [], i = 0; i < bytes.length; i++) {
+    var current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+    hex.push((current >>> 4).toString(16));
+    hex.push((current & 0xF).toString(16));
+  }
+  return hex.join("");
+}
+
+module.exports = {
+  isSimpleType,
+  equal,
+  byteLength,
+  ab2hex,
+  hex2ab,
+  hex2Bytes,
+  bytes2Hex,
+  buffer2Str,
+  str2ab
+};

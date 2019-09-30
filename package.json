@@ -8,6 +8,14 @@
   },
   "author": "",
   "license": "ISC",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.js?(x)": ["eslint --fix", "git add"]
+  },
   "devDependencies": {
     "chai": "^4.2.0",
     "eslint": "^6.4.0",
